@@ -1,7 +1,8 @@
 const fs = require("fs");
 const path = require("path");
+const shortid = require("shortid");
 
-const contactsPath = path.join(__dirname, "db", "contacts.json");
+const contactsPath = path.join(__dirname, "./db/contacts.json");
 
 function listContacts() {
   fs.readFile(contactsPath, "utf-8", (err, data) => {
@@ -35,7 +36,6 @@ function removeContact(contactId) {
     }
 
     const parseContacts = JSON.parse(data);
-
     const contact = parseContacts.filter((contact) => contact.id !== contactId);
 
     fs.writeFile(contactsPath, JSON.stringify(contact), (err) => {
@@ -54,7 +54,33 @@ function removeContact(contactId) {
 }
 
 function addContact(name, email, phone) {
-  // ...твой код
+  fs.readFile(contactsPath, "utf-8", (err, data) => {
+    if (err) {
+      return console.error(err);
+    }
+
+    const parseContacts = JSON.parse(data.toString());
+
+    const uniqueContact = parseContacts.find(
+      (contact) => contact.email === email && contact.phone === phone
+    );
+
+    if (uniqueContact) {
+      return console.error("This contact has been added earlier!");
+    }
+
+    const newContact = { id: shortid.generate(), name, email, phone };
+    const contacts = [...parseContacts, newContact];
+
+    fs.writeFile(contactsPath, JSON.stringify(contacts), (err) => {
+      if (err) {
+        return console.error(err);
+      }
+    });
+
+    console.log("Contact has been added successfully!");
+    console.table(contacts);
+  });
 }
 
 module.exports = {
